@@ -43,6 +43,10 @@ use PHPUnit\Framework\TestCase;
  */
 class ManagementApiTest extends TestCase
 {
+    /**
+     * @var ManagementApi
+     */
+    protected $apiInstance;
 
     /**
      * Setup before running any test cases
@@ -56,6 +60,19 @@ class ManagementApiTest extends TestCase
      */
     public function setUp()
     {
+        // Configure Host & API key prefix for management authentication
+        $config = \TalonOne\Client\Configuration::getDefaultConfiguration()
+            ->setHost('http://host.docker.internal:9000')
+            ->setApiKeyPrefix('Authorization', 'ManagementKey-v1')
+            ->setApiKey('Authorization', getenv('MAPI_KEY'));
+
+            // Initiating a management api instance with the config
+        $this->apiInstance = new \TalonOne\Client\Api\ManagementApi(
+            // If you want use custom http client, pass your client which implements `GuzzleHttp\ClientInterface`.
+            // This is optional, `GuzzleHttp\Client` will be used as default when `null` is passed.
+            null, // new YouClientImplementation(),
+            $config
+        );
     }
 
     /**
@@ -160,6 +177,19 @@ class ManagementApiTest extends TestCase
      */
     public function testCreateCoupons()
     {
+        try {
+            $application_id = 1; // int | desired application identifier
+            $campaign_id = 1; // int | desired application identifier
+            $body = new \TalonOne\Client\Model\NewCoupons([
+                'usageLimit' => 0,
+                'numberOfCoupons' => 1,
+                'validCharacters' => ['A'],
+            ]);
+            $coupons = $this->apiInstance->createCoupons($application_id, $campaign_id, $body, $silent=false);
+            $this->assertEquals(count($coupons->getData()), 1);
+        } catch (Exception $e) {
+            echo 'Exception when calling ManagementApi->createCoupons: ', $e->getMessage(), PHP_EOL;
+        }
     }
 
     /**
@@ -510,6 +540,17 @@ class ManagementApiTest extends TestCase
      */
     public function testGetApplication()
     {
+        try {
+            $application_id = 1; // int | desired application identifier
+            // Calling `getApplication` function
+            $application = $this->apiInstance->getApplication($application_id);
+
+            // print_r($application);
+
+            $this->assertEquals($application->getId(), 1);
+        } catch (Exception $e) {
+            echo 'Exception when calling ManagementApi->getApplication: ', $e->getMessage(), PHP_EOL;
+        }
     }
 
     /**
@@ -730,6 +771,20 @@ class ManagementApiTest extends TestCase
      */
     public function testGetCouponsWithoutTotalCount()
     {
+        try {
+            $application_id = 1; // int | desired application identifier
+            // Calling `getApplication` function
+            $campaign_id = 1; // int | desired application identifier
+            // Calling `getApplication` function
+            $coupons = $this->apiInstance->getCouponsWithoutTotalCount($application_id, $campaign_id);
+
+            // print_r($coupons);
+
+            $this->assertEquals(count($coupons->getData()), 1);
+            $this->assertEquals($coupons->getData()[0]->getValue(), "aaaa-aaaa");
+        } catch (Exception $e) {
+            echo 'Exception when calling ManagementApi->getApplication: ', $e->getMessage(), PHP_EOL;
+        }
     }
 
     /**
